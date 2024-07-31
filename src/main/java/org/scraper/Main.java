@@ -143,6 +143,28 @@ public class Main {
     }
 
 
+    //function to extract comments from code
+    /* methodsPattern explanation:
+        \\s* : zero or more spacing characters
+        \\s+ : one or more spacing characters
+        (public|private|protected)? : access to the method, "?" character makes it optional
+        (static)? : matches the static key word (Optional)
+        first \\w+ : any word character (alphanumeric characters and underscores) (return type)
+        second \\w+ : the method/function name
+        ([^)]*\) : opening and closing parenthesis
+        (throws\s+[^\\s]*) : the throws key word followed by [^\\s]* (exception type)
+    */
+    public static void extractComments(String code){
+        String singleLigne = "//.*";
+        String multipleLigne = "/\\*.*?\\*/";
+        String javaDocComments = "/\\*\\*.*?\\*/";
+
+        String commentsPattern = singleLigne +"|"+multipleLigne+"|"+javaDocComments;
+
+        String methodsPattern = "(public|private|protected)?\\s+(static)?\\s+\\w+\\s+\\w+\\s*\\([^)]*\\)\\s*(throws\\s+[^\\s]*)?\\s*\\{";
+
+    }
+
 
 
 
