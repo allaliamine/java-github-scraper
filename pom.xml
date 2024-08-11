@@ -28,6 +28,14 @@
             <version>5.7.1</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>LATEST</version>
+        </dependency>
+
+
     </dependencies>
 
 </project>
