@@ -5,8 +5,24 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
 import com.opencsv.CSVWriter;
-import org.openqa.selenium.*;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.TranslateOptions;
+import com.google.cloud.translate.Translation;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URLEncoder;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -18,6 +34,9 @@ import java.util.regex.Pattern;
 
 public class Main {
 
+    private static final String TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
+
+
     public static void main(String[] args) {
 
         System.setProperty("webdriver.chrome.driver", "/Users/mac/Downloads/chromedriver-mac-x64/chromedriver");
@@ -25,78 +44,82 @@ public class Main {
         WebDriver driver = new ChromeDriver();
         JavascriptExecutor js = (JavascriptExecutor) driver;
 
+        try{
 
+            //sign up to gitHub
+            driver.get("https://github.com/login");
 
-//        try{
-//
-//            //sign up to gitHub
-//            driver.get("https://github.com/login");
-//
-//            WebElement usernameField = driver.findElement(By.id("login_field"));
-//            usernameField.sendKeys("USERNAME");
-//
-//            WebElement passwordField = driver.findElement(By.id("password"));
-//            passwordField.sendKeys("PASSWORD");
-//
-//            WebElement loginButton = driver.findElement(By.name("commit"));
-//            loginButton.click();
-//
-//            Thread.sleep(19000);
-//
-//            //load java code pages
-//            driver.get("https://gist.github.com/search?l=Java&q=java");
-//
-//            List<String> links = new ArrayList<>();
-//
-//            //variable that store if there is a next page
-//            boolean nextPage = true;
-//
-//            while(nextPage){
-//
-//                getUrls(driver, links);
-//                //scroll down
-//                js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-//
-//                //get the next page button
-//                List<WebElement> nextButtons = driver.findElements(By.cssSelector("a[rel='next']"));
-//
-//                if (nextButtons.size() > 0){
-//
-//                    WebElement nextButton = nextButtons.getFirst();
-//                    String isAriaDisabled = nextButton.getAttribute("aria-disabled");
-//
-//                    if (nextButton.isDisplayed() && ( isAriaDisabled == null || !isAriaDisabled.equals("true") ) ){
-//                        //click the button if it's not disabled
-//                        nextButton.click();
-//                        //wait to the next page to load
-//                        Thread.sleep(5000);
-//                    }else {
-//                        // update the nextPage variable if it's disabled
-//                        nextPage = false;
-//                    }
-//                }else {
-//                    nextPage = false;
-//                }
-//            }
-//
-//            for(String url: links){
-//                extractCode(driver,url);
-//            }
-//
-//        }catch(RuntimeException e){
-//            System.out.println("erreur"+e.getMessage());
-//        }catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
+            WebElement usernameField = driver.findElement(By.id("login_field"));
+            usernameField.sendKeys("USERNAME");
 
-        extractCode(driver,"https://gist.github.com/fauzie811/b8a9678e0c522b391d5c7fd806c7bb16");
+            WebElement passwordField = driver.findElement(By.id("password"));
+            passwordField.sendKeys("PASSWORD");
 
+            WebElement loginButton = driver.findElement(By.name("commit"));
+            loginButton.click();
 
+            Thread.sleep(19000);
+
+            //load java code pages
+            driver.get("https://gist.github.com/search?l=Java&q=java");
+
+            List<String> links = new ArrayList<>();
+
+            goToNextPage(driver, js, links);
+
+            for(String url: links){
+                extractCode(driver,url);
+            }
+
+        }catch(RuntimeException e){
+            System.out.println("erreur"+e.getMessage());
+        }catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
+    /*
+        method that go to next page until there is no next button
+     */
+    public static void goToNextPage(WebDriver driver, JavascriptExecutor js, List<String> links ) throws InterruptedException{
+        //variable that store if there is a next page
+        boolean nextPage = true;
 
-    //function that extract urls of java code page
+        while(nextPage){
+
+            getUrls(driver, links);
+
+            //scroll down
+            js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+
+            //get the next page button
+            List<WebElement> nextButtons = driver.findElements(By.cssSelector("a[rel='next']"));
+
+            if (nextButtons.size() > 0){
+
+                WebElement nextButton = nextButtons.getFirst();
+                String isAriaDisabled = nextButton.getAttribute("aria-disabled");
+
+                if (nextButton.isDisplayed() && ( isAriaDisabled == null || !isAriaDisabled.equals("true") ) ){
+                    //click the button if it's not disabled
+                    nextButton.click();
+                    //wait to the next page to load
+                    Thread.sleep(5000);
+                }else {
+                    // update the nextPage variable if it's disabled
+                    nextPage = false;
+                }
+            }else {
+                nextPage = false;
+            }
+        }
+    }
+
+
+    /*
+        method that extract urls of java code page
+     */
     public static void getUrls(WebDriver driver,List<String> links ){
 
         List<WebElement> codePages = driver.findElements(By.className("Link--muted"));
@@ -112,6 +135,9 @@ public class Main {
     }
 
 
+    /*
+        method to extract the code from raw links of file
+     */
     public static void extractCode(WebDriver driver, String url) {
         try {
             driver.get(url);
@@ -146,7 +172,11 @@ public class Main {
                     if (codeText.isEmpty()) {
                         System.out.println("No code found in the <pre> tag at URL: " + rawLink);
                     } else {
-                        processCode(codeText);
+                        try {
+                            processCode(codeText);
+                        } catch (Exception e) {
+                            System.out.println("Error processing code at URL: " + rawLink);
+                        }
                     }
                 }
             }
@@ -155,6 +185,7 @@ public class Main {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
 
     /*
         methode to write data into csv file
@@ -178,9 +209,9 @@ public class Main {
 
 
     /*
-        methode to extract methods and commetns from java code
+        method to extract methods and comments from java code
      */
-    private static void processCode(String code) {
+    public static void processCode(String code) {
 
         String multipleLigne = "(?s)/\\*.*?\\*/";
         String singleLine = "//[^\\r\\n]*";
@@ -201,22 +232,33 @@ public class Main {
 
             StringBuilder commentaire = new StringBuilder();
 
-
             while (commentMatcher.find()) {
                 commentaire.append(commentMatcher.group()).append(" | ");
             }
 
-            System.out.println("Method: " + methodName);
-            System.out.println("body: " + cleanedMethode);
-            System.out.println("***********************");
-            System.out.println("Comment: " + commentaire);
-            System.out.println("***********************");
+            if(!commentaire.isEmpty()) {
+                try {
+                    commentaire = new StringBuilder(TranslteToEnglish(String.valueOf(commentaire)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                System.out.println("Method: " + methodName);
+                System.out.println("body: " + cleanedMethode);
+                System.out.println("***********************");
+                System.out.println("Comment: " + commentaire);
+                System.out.println("***********************");
+
+                writeData("/Users/mac/Downloads/data2.csv", new String[]{String.valueOf(commentaire), cleanedMethode});
+            }
 
         });
-
     }
 
 
+    /*
+        method to clean the code from comments
+     */
     private static String cleanCode(String code){
         String multipleLigne = "(?s)/\\*.*?\\*/";
         String singleLine = "//[^\\r\\n]*";
@@ -224,6 +266,40 @@ public class Main {
 
         return code.replaceAll(combainedComments,"");
 
+    }
+
+    private static final String API_KEY = "REDACTED";
+
+    public static String TranslteToEnglish(String text) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+
+        // URL encode the text to be translated
+        String encodedText = URLEncoder.encode(text, "UTF-8");
+        String url = String.format("https://translation.googleapis.com/language/translate/v2?key=%s&q=%s&target=en", API_KEY, encodedText);
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+
+            // Extract translated text from JSON response
+            String responseBody = response.body().string();
+            return parseTranslatedText(responseBody);
+        }
+    }
+
+    private static String parseTranslatedText(String jsonResponse) {
+        // Parse the JSON response
+        JSONObject jsonObject = new JSONObject(jsonResponse);
+        return jsonObject
+                .getJSONObject("data")
+                .getJSONArray("translations")
+                .getJSONObject(0)
+                .getString("translatedText");
     }
 
 }
