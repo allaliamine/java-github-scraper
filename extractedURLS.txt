@@ -1,4 +1,4 @@
-String links = {
+links = List.of(
 "https://gist.github.com/jairdeus12/fb72a5d3d51b3eef41354e430f1aca81",
 "https://gist.github.com/ymkawb/00b881e6781d3b857fbe012ec67413a5",
 "https://gist.github.com/Akshita-jain85/d5ac95010fe710468783a33c79f451cb",
@@ -1008,4 +1008,4 @@ String links = {
 "https://gist.github.com/ORESoftware/1872ac72291a34458529885b5273a491",
 "https://gist.github.com/isaacmg/23674c1d77b7c0248ed95592c9f5b270",
 "https://gist.github.com/slawekradzyminski/01bccd1dd83f53685cf3afac80c85391",
-"https://gist.github.com/testerlawrence/6c9b64b7298d30a3ac15bd767ec5efb3"}
+"https://gist.github.com/testerlawrence/6c9b64b7298d30a3ac15bd767ec5efb3");

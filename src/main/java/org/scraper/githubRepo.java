@@ -7,17 +7,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.scraper.Main.processCode;
+import static org.scraper.githubGists.processCode;
 
 public class githubRepo {
-
-    private static final String OUTPUT_FILE = "./keepTrack.txt";
 
     public static void main(String[] args) {
         System.setProperty("webdriver.chrome.driver", "/Users/mac/Downloads/chromedriver-mac-x64/chromedriver");
@@ -92,7 +89,7 @@ public class githubRepo {
         method to go to next page and calls the getRepoUrls to store the urls of repositories of the
         actual page
      */
-    public static void goToNextPage(WebDriver driver, JavascriptExecutor js, Runnable action) throws InterruptedException {
+    public static void goToNextPage(WebDriver driver, JavascriptExecutor js, Runnable action) {
 
         //variable that store if there is a next page
         boolean nextPage = true;
@@ -159,7 +156,7 @@ public class githubRepo {
     public static void getUrlsFromJavaPage(WebDriver driver, String url ,List<String> javaCodeUrls){
         try {
             Thread.sleep(5000);
-            FileWriter writer = new FileWriter("./extractedJavaFiles.txt", true);
+            FileWriter writer = new FileWriter("./extractedJavaFilesTrack.txt", true);
 
             List<WebElement> codePages = driver.findElements(By.cssSelector("td.blob-num a"));
 
@@ -241,7 +238,7 @@ public class githubRepo {
 
 
     public static void readFile(WebDriver driver) {
-        String filePath = "./extractedJavaFiles.txt";
+        String filePath = "./extractedJavaFilesTrack.txt";
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -259,14 +256,4 @@ public class githubRepo {
         }
     }
 
-
-
-    public static boolean check_URL(String str) {
-        try {
-            new URL(str).toURI();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }

@@ -1,4 +1,4 @@
-links = {
+links = List.of(
 "https://github.com/Snailclimb/JavaGuide",
 "https://github.com/GrowingGit/GitHub-Chinese-Top-Charts",
 "https://github.com/krahets/hello-algo",
@@ -998,4 +998,4 @@ links = {
 "https://github.com/wenbochang888/house",
 "https://github.com/daimajia/AndroidViewHover",
 "https://github.com/alibaba/cobar",
-"https://github.com/Netflix/concurrency-limits}";
+"https://github.com/Netflix/concurrency-limits");
