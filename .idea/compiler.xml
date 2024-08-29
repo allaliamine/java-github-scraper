@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="java-github-scrapper" />
+        <module name="java-github-scraper" />
       </profile>
     </annotationProcessing>
   </component>
